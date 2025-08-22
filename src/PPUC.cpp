@@ -278,6 +278,68 @@ bool PPUC::Connect() {
       }
     }
 
+
+
+
+      // here comes another very dirty hack to make foenichs Quicksilver running with 2 matrices
+      // ---------------------------------------------------------------------------------------
+    // Send switch matrix configuration to I/O boards
+    const YAML::Node& switchMatrix2 = m_ppucConfig["switchMatrix2"];
+    if (switchMatrix2) {
+      index = 0;
+      m_pRS485Comm->SendConfigEvent(
+          new ConfigEvent(switchMatrix2["board"].as<uint8_t>(),
+                          (uint8_t)CONFIG_TOPIC_SWITCH_MATRIX, index++,
+                          (uint8_t)CONFIG_TOPIC_ACTIVE_LOW,
+                          switchMatrix2["activeLow"].as<bool>()));
+      m_pRS485Comm->SendConfigEvent(
+          new ConfigEvent(switchMatrix2["board"].as<uint8_t>(),
+                          (uint8_t)CONFIG_TOPIC_SWITCH_MATRIX, index++,
+                          (uint8_t)CONFIG_TOPIC_MAX_PULSE_TIME,
+                          switchMatrix2["pulseTime"].as<uint32_t>()));
+      const YAML::Node& switcheMatrix2Columns =
+          m_ppucConfig["switchMatrix2"]["columns"];
+      for (YAML::Node n_switchMatrix2Column : switcheMatrix2Columns) {
+        m_pRS485Comm->SendConfigEvent(
+            new ConfigEvent(switchMatrix2["board"].as<uint8_t>(),
+                            (uint8_t)CONFIG_TOPIC_SWITCH_MATRIX, index++,
+                            (uint8_t)CONFIG_TOPIC_TYPE, MATRIX_TYPE_COLUMN));
+        m_pRS485Comm->SendConfigEvent(
+            new ConfigEvent(switchMatrix2["board"].as<uint8_t>(),
+                            (uint8_t)CONFIG_TOPIC_SWITCH_MATRIX, index++,
+                            (uint8_t)CONFIG_TOPIC_NUMBER,
+                            n_switchMatrix2Column["number"].as<uint32_t>()));
+        m_pRS485Comm->SendConfigEvent(
+            new ConfigEvent(switchMatrix2["board"].as<uint8_t>(),
+                            (uint8_t)CONFIG_TOPIC_SWITCH_MATRIX, index++,
+                            (uint8_t)CONFIG_TOPIC_PORT,
+                            n_switchMatrix2Column["port"].as<uint32_t>()));
+      }
+      const YAML::Node& switcheMatrix2Rows =
+          m_ppucConfig["switchMatrix2"]["rows"];
+      for (YAML::Node n_switchMatrix2Row : switcheMatrix2Rows) {
+        m_pRS485Comm->SendConfigEvent(
+            new ConfigEvent(switchMatrix2["board"].as<uint8_t>(),
+                            (uint8_t)CONFIG_TOPIC_SWITCH_MATRIX, index++,
+                            (uint8_t)CONFIG_TOPIC_TYPE, MATRIX_TYPE_ROW));
+        m_pRS485Comm->SendConfigEvent(
+            new ConfigEvent(switchMatrix2["board"].as<uint8_t>(),
+                            (uint8_t)CONFIG_TOPIC_SWITCH_MATRIX, index++,
+                            (uint8_t)CONFIG_TOPIC_NUMBER,
+                            n_switchMatrix2Row["number"].as<uint32_t>()));
+        m_pRS485Comm->SendConfigEvent(
+            new ConfigEvent(switchMatrix2["board"].as<uint8_t>(),
+                            (uint8_t)CONFIG_TOPIC_SWITCH_MATRIX, index++,
+                            (uint8_t)CONFIG_TOPIC_PORT,
+                            n_switchMatrix2Row["port"].as<uint32_t>()));
+      }
+    }
+      // end of very dirty hack for 2 matrices
+      // ---------------------------------------------------------------------------------------
+
+
+
+
     // Send PWM configuration to I/O boards
     const YAML::Node& pwmOutput = m_ppucConfig["pwmOutput"];
     if (pwmOutput) {
